@@ -12,6 +12,7 @@ import BookForm from "../Books/BookForm";
 import { useEffect } from "react";
 import axios from "axios";
 import TableRowViewControl from "./TableRowViewControl";
+import Checkbox from '@mui/material/Checkbox';
 
 export default function BasicTable({ onBookInitialValues }) {
   const [bookValues, setBookValues] = useState(onBookInitialValues);
@@ -21,6 +22,7 @@ export default function BasicTable({ onBookInitialValues }) {
   const [open, setOpen] = useState(false);
   const [isDataFromApi, setIsDataFromApi] = useState(false);
 
+  // fetching books from local database and add to booksdata state
   const fetchAllBooks = () => {
     axios
       .get("http://localhost:8080/books")
@@ -46,9 +48,9 @@ export default function BasicTable({ onBookInitialValues }) {
   };
 
   
-
+// delete bookitem from local database
   const handleDelete = (bookItem) => {
-    console.log("Book to delete:", bookItem);
+    
     axios
       .delete(`http://localhost:8080/delete/${bookItem?.barcode}`)
       .then((response) => {
@@ -60,14 +62,11 @@ export default function BasicTable({ onBookInitialValues }) {
       });
   };
 
-  console.log("All Books:", booksData);
-
-  const handleSearchChange = (event) => {
+  // isbn validation
+  const validateISBN = (event) => {
     const { value } = event.target;
     setSearchField(value);
 
-    console.log("In value:", value);
-    console.log("In value:", typeof value);
     var isValidISBN = value.match(/[9]+[0-9]{12}/g);
 
     if (isValidISBN && value.length === 13) {
@@ -75,29 +74,15 @@ export default function BasicTable({ onBookInitialValues }) {
     } else {
       setError("ISBN Not Valid");
     }
-
-    console.log(value);
-
-    if (value.length === 0) {
-      console.log("Inside");
-      setBooksData(JSON.parse(localStorage.getItem("bookAdded")));
-
-      return;
-    }
   };
 
-  console.log("book data", booksData);
-
+  // find book in database if present else search from google api
   const handleSearchBook = (event) => {
     event.preventDefault();
 
-    console.log("setSearchField:", searchField);
-
     const filteredBooks = booksData?.filter(
-      (bookToSearch) => bookToSearch.isbn === searchField
+      (bookToSearch) => bookToSearch.isbn == searchField
     );
-
-    console.log("filteredBooks:", filteredBooks);
 
     if (filteredBooks.length > 0) {
       setBooksData(filteredBooks);
@@ -121,24 +106,23 @@ export default function BasicTable({ onBookInitialValues }) {
     }
   };
 
+  //display data from google api in tablerowviewcontrol
   const displayTableRows = () => {
-    return Object.keys(booksData).map((bookItem, index) => {
+    return Object.keys(booksData).map((bookItem,index) => {
       const bookItemValue = booksData[bookItem];
 
       return (
         <TableRowViewControl
           uniqueKey={bookItemValue.id}
           bookItemValue={bookItemValue}
-          handleDelete={handleDelete}
         />
       );
     });
   };
 
-  console.log("On BooksDta:", booksData);
-
   return (
     <>
+    {/* add book */}
       <div
         style={{
           display: "flex",
@@ -163,7 +147,7 @@ export default function BasicTable({ onBookInitialValues }) {
             <TextField
               type="number"
               variant="outlined"
-              onChange={handleSearchChange}
+              onChange={validateISBN}
               placeholder="Search...."
             />
             <Button type="submit" variant="outlined">
@@ -175,6 +159,7 @@ export default function BasicTable({ onBookInitialValues }) {
       <p style={{ textAlign: "right", marginRight: "2%" }}>
         {error}
       </p>
+      {/* displaying data */}
       {booksData?.length > 0 ? (
         <>
           <TableContainer component={Paper} >
@@ -185,7 +170,8 @@ export default function BasicTable({ onBookInitialValues }) {
                   <TableCell>ISBN</TableCell>
                   <TableCell>Author Name</TableCell>
                   <TableCell>Pages</TableCell>
-                  {!isDataFromApi ?<><TableCell>Barcode</TableCell> 
+                  {!isDataFromApi ?<><TableCell>Barcode</TableCell>
+                  <TableCell>Read</TableCell> 
                   <TableCell>Operations</TableCell></>:null}
                 </TableRow>
               </TableHead>
@@ -194,9 +180,6 @@ export default function BasicTable({ onBookInitialValues }) {
                   ? booksData?.map((bookItem) => (
                       <TableRow
                         key={bookItem?.bookId}
-                        sx={{
-                          "&:last-child td, &:last-child th": { border: 0 },
-                        }}
                       >
                         <TableCell component="th" scope="row">
                           {bookItem?.title}
@@ -205,6 +188,7 @@ export default function BasicTable({ onBookInitialValues }) {
                         <TableCell>{bookItem?.author}</TableCell>
                         <TableCell>{bookItem?.pages}</TableCell>
                         <TableCell>{bookItem?.barcode}</TableCell>
+                        <TableCell><Checkbox checked={bookItem?.readBook}/></TableCell>
                         <TableCell>
                           <Button
                             variant="text"
@@ -226,16 +210,14 @@ export default function BasicTable({ onBookInitialValues }) {
           Nothing to Show. Please Add Some data
         </h3>
       )}
+
+      {/* add books in local database */}
       <BookForm
         onBookInitialValues={onBookInitialValues}
         handleClose={handleClose}
         onOpen={open}
-        onSetOpen={setOpen}
-        onBooksData={booksData}
-        onSetBooksData={setBooksData}
         onSetBookValues={setBookValues}
         onBookValues={bookValues}
-        isDataFromApi={isDataFromApi}
         fetchAllBooks={fetchAllBooks}
       />
     </>

@@ -13,12 +13,10 @@ const BookForm = ({
   onOpen,
   onSetBookValues,
   onBookValues,
-  isEditMode,
-  isDataFromApi,
   fetchAllBooks,
 }) => {
-  console.log("Book Vlaues:", onBookValues);
 
+  //key value pairs
   const bookDetails = {
     title: onBookValues.title,
     author: onBookValues.author,
@@ -27,60 +25,40 @@ const BookForm = ({
     pages: onBookValues.pages,
   };
 
-  const handleAddOrEdit = (event) => {
+  //add books to database
+  const handleAdd = (event) => {
     event.preventDefault();
 
-    
-    if(!isEditMode) {
-      console.log("IN nELSE....");
-      axios
-        .post("http://localhost:8080/add", bookDetails)
-        .then((response) => {
-          console.log(response);
-          fetchAllBooks();
-        })
-        .catch((error) => {
-          console.log("Error:", error);
-        });
-    }
-    
+    axios
+      .post("http://localhost:8080/add", bookDetails)
+      .then((response) => {
+        console.log(response);
+        fetchAllBooks();
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      });
+
+    //reset form
     onSetBookValues({ ...onBookInitialValues });
     handleClose();
   };
 
-  console.log("OnBookValues:",onBookValues);
-
   const handleOnChange = (event) => {
     const { name, value } = event.target;
 
-    // From Database case
-    if (!isDataFromApi) {
-      onSetBookValues({
-        ...onBookValues,
-        [name]: value,
-      });
-      return;
-    }
-    // In case of Data from Google Books
-    // onSetBookValues({
-    //   ...onBookValues,
-    //   volumeInfo: {
-    //     ...onBookValues.volumeInfo,
-    //     [name]: value,
-    //   },
-    // });
+    onSetBookValues({
+      ...onBookValues,
+      [name]: value,
+    });
   };
 
   return (
     <div>
-      {/* <Button variant="outlined" onClick={handleClickOpen}>
-        Add Book
-      </Button> */}
       <Dialog open={onOpen} onClose={handleClose}>
         <DialogTitle>Add Form</DialogTitle>
-        <form onSubmit={handleAddOrEdit}>
+        <form onSubmit={handleAdd}>
           <DialogContent>
-            {/* <DialogContentText>Edit Form</DialogContentText> */}
             <TextField
               autoFocus
               name="title"
@@ -89,10 +67,7 @@ const BookForm = ({
               type="text"
               fullWidth
               variant="standard"
-              value={
-                
-                   onBookValues.title
-              }
+              value={onBookValues.title}
               onChange={handleOnChange}
             />
             <TextField
@@ -102,9 +77,8 @@ const BookForm = ({
               type="number"
               fullWidth
               variant="standard"
-              value={
-                 onBookValues.isbn
-              }
+              maxLength={5}
+              value={onBookValues.isbn}
               onChange={handleOnChange}
             />
             <TextField
@@ -114,9 +88,7 @@ const BookForm = ({
               type="number"
               fullWidth
               variant="standard"
-              value={
-                 onBookValues.barcode
-              }
+              value={onBookValues.barcode}
               onChange={handleOnChange}
             />
             <TextField
@@ -126,9 +98,7 @@ const BookForm = ({
               type="text"
               fullWidth
               variant="standard"
-              value={
-                 onBookValues.author
-              }
+              value={onBookValues.author}
               onChange={handleOnChange}
             />
             <TextField
@@ -138,9 +108,7 @@ const BookForm = ({
               type="number"
               fullWidth
               variant="standard"
-              value={
-                 onBookValues.pages
-              }
+              value={onBookValues.pages}
               onChange={handleOnChange}
             />
           </DialogContent>

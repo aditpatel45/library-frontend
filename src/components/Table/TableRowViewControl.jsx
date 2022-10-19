@@ -5,14 +5,10 @@ const TableRowViewControl = ({
   uniqueKey,
   bookItemValue
 }) => {
-  console.log(bookItemValue);
   return (
     <>
       <TableRow
         key={uniqueKey}
-        sx={{
-          "&:last-child td, &:last-child th": { border: 0 },
-        }}
       >
         <TableCell component="th" scope="row">
           {bookItemValue?.volumeInfo?.title}
